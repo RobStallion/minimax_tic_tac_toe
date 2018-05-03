@@ -1,21 +1,16 @@
-# Ttt
+# minimax_tic_tac_toe
 
-**TODO: Add description**
+## How to play
 
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `ttt` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:ttt, "~> 0.1.0"}
-  ]
-end
+To play, follow the steps below...
+```
+git clone https://github.com/RobStallion/minimax_tic_tac_toe.git && cd minimax_tic_tac_toe
+mix deps.get
+iex -S mix
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/ttt](https://hexdocs.pm/ttt).
-
+Once the `iex` interactive shell is open start the game with...
+```
+Ttt.run
+```
+and then follow the on screen instructions
