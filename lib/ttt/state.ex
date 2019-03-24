@@ -1,21 +1,20 @@
 defmodule Ttt.State do
-  @enforce_keys [:board, :comp, :outcome, :player, :turn]
+  @enforce_keys [:board, :comp, :outcome, :player, :turn, :available_moves]
   defstruct @enforce_keys
-
-  alias Ttt.Outcome
 
   def update_state(state, spot) do
     state
     |> update_board(spot)
     |> update_turn()
+    |> update_avail_moves()
     |> update_outcome()
   end
 
-  def update_board(state, spot) do
+  defp update_board(state, spot) do
     %{state | board: List.update_at(state.board, spot, fn(_) -> Map.get(state, state.turn) end)}
   end
 
-  def update_turn(state) do
+  defp update_turn(state) do
     case state.turn do
       :player ->
         %{state | turn: :comp}
@@ -25,19 +24,43 @@ defmodule Ttt.State do
     end
   end
 
-  def update_outcome(state) do
+  defp update_avail_moves(state) do
+    %{state | available_moves: Enum.filter(state.board, &is_integer/1)}
+  end
+
+  defp update_outcome(state) do
     cond do
-      Outcome.win?(state.board, state.comp) ->
+      win?(state.board, state.comp) ->
         %{state | outcome: :comp_win}
 
-      Outcome.win?(state.board, state.player) ->
+      win?(state.board, state.player) ->
         %{state | outcome: :player_win}
 
-      Outcome.get_avail_moves(state) == [] ->
+      state.available_moves == [] ->
         %{state | outcome: :draw}
 
       true ->
         %{state | outcome: :ongoing}
     end
   end
+
+  defp win?([i0, i1, i2, i3, i4, i5, i6, i7, i8], player) do
+    [
+      [i0, i1, i2],
+      [i3, i4, i5],
+      [i6, i7, i8],
+      [i0, i3, i6],
+      [i1, i4, i7],
+      [i2, i5, i8],
+      [i0, i4, i8],
+      [i2, i4, i6]
+    ]
+    |> Enum.map(&all_same?(&1, player))
+    |> Enum.any?(&(&1 == true))
+  end
+
+  defp all_same?(combo, player) do
+    Enum.all?(combo, &(&1 == player))
+  end
+
 end

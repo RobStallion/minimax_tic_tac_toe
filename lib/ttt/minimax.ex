@@ -1,14 +1,13 @@
 defmodule Ttt.Minimax do
-  alias Ttt.{Outcome, State}
+  alias Ttt.State
 
   def get_comp_move(state) do
     depth = get_depth(state)
-    avail_moves = Outcome.get_avail_moves(state)
 
     moves_with_index =
       state
       |> minimax(depth, [])
-      |> Enum.zip(avail_moves)
+      |> Enum.zip(state.available_moves)
 
     {_score, index} =
       pick_for_comp_or_human(
@@ -49,8 +48,7 @@ defmodule Ttt.Minimax do
   defp play_move(state, acc) do
     depth = get_depth(state)
 
-    state
-    |> Outcome.get_avail_moves()
+    state.available_moves
     |> Enum.map(&State.update_state(state, &1))
     |> Enum.map(fn(updated_state) ->
       updated_state
@@ -64,6 +62,6 @@ defmodule Ttt.Minimax do
   end
 
   defp get_depth(state) do
-    state |> Outcome.get_avail_moves() |> length()
+    length(state.available_moves)
   end
 end

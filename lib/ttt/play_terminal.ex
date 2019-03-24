@@ -27,7 +27,8 @@ defmodule Ttt.PlayTerminal do
       outcome: :ongoing,
       turn: :player,
       player: players_team,
-      comp: comp_team
+      comp: comp_team,
+      available_moves: Enum.to_list(0..8),
     }
 
     play(init)
@@ -48,7 +49,7 @@ defmodule Ttt.PlayTerminal do
 
       %State{outcome: :ongoing, turn: :player} ->
         player_spot = get_player_move("Pick your spot.")
-        
+
         state |> State.update_state(player_spot) |> play()
 
       %State{outcome: :ongoing, turn: :comp} ->
