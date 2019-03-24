@@ -1,5 +1,6 @@
 defmodule Ttt.PlayTerminal do
   alias Ttt.{State, Minimax}
+  alias IO.ANSI
 
   def start do
     IO.puts("""
@@ -59,7 +60,6 @@ defmodule Ttt.PlayTerminal do
 
   # ---- RENDER BOARD HELPERS -----
 
-  # colour in the x and o. Look at andrews one
   defp format_board(state) do
     state.board
     |> Enum.chunk_every(3)
@@ -71,15 +71,25 @@ defmodule Ttt.PlayTerminal do
   defp format_row(row) do
     row
     |> Enum.map(fn(tile) ->
-      case is_bitstring(tile) do
+      case is_atom(tile) do
         false ->
           " #{tile} "
-        _     ->
-          tile = String.upcase(tile)
-          " #{tile} "
+
+        true ->
+          filled_tile = color_tile(tile)
+
+          " #{filled_tile} "
       end
     end)
     |> Enum.join("|")
+  end
+
+  defp color_tile(team) do
+    str = team |> Atom.to_string() |> String.upcase()
+    case team do
+      :x -> ANSI.format([:bright, :blue, str])
+      :o -> ANSI.format([:bright, :red, str])
+    end
   end
 
   # ----- CAPTURE PLAYERS INPUTS -----
@@ -96,12 +106,14 @@ defmodule Ttt.PlayTerminal do
       |> capture_input()
       |> String.downcase()
 
-    if players_team == "x" || players_team == "o" do
-      players_team
-    else
-      pick_team("Please pick either X or O (case insensitive)")
-    end
-    |> String.to_atom()
+    players_team =
+      if players_team == "x" || players_team == "o" do
+        players_team
+      else
+        pick_team("Please pick either X or O (case insensitive)")
+      end
+
+    String.to_atom(players_team)
   end
 
   # Need to add logic so human can only pick from avaliable moves
