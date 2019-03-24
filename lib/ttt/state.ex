@@ -44,6 +44,8 @@ defmodule Ttt.State do
     end
   end
 
+  # ----- WIN HELPERS -----
+
   defp win?([i0, i1, i2, i3, i4, i5, i6, i7, i8], player) do
     [
       [i0, i1, i2],
@@ -62,5 +64,4 @@ defmodule Ttt.State do
   defp all_same?(combo, player) do
     Enum.all?(combo, &(&1 == player))
   end
-
 end

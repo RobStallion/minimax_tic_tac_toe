@@ -28,7 +28,7 @@ defmodule Ttt.PlayTerminal do
       turn: :player,
       player: players_team,
       comp: comp_team,
-      available_moves: Enum.to_list(0..8),
+      available_moves: Enum.to_list(0..8)
     }
 
     play(init)
