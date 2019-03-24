@@ -5,17 +5,21 @@ defmodule Ttt.PlayTerminal do
   def start do
     IO.puts("""
     You have signed up to play
-    \nThe Reigning
-    \nDefending
-    \nUndisputed
-    \nTic Tac Toe champion of this computer.
-    \nCOMPUTER!!!!!!!!!!!!!!!!!!!
-    \n💪💻🤳
+    The Reigning
+    Defending
+    Undisputed
+    Tic Tac Toe champion of this computer.
+    COMPUTER!!!!!!!!!!!!!!!!!!!
+    💪💻🤳
 
     \nLet's begin
     """)
 
-    players_team = pick_team("Start by picking your team. X or O")
+    players_team =
+      "Start by picking your team. X or O"
+      |> pick_team()
+      |> String.to_atom()
+
     comp_team = if players_team == :x, do: :o, else: :x
 
     init = %State{
@@ -77,7 +81,6 @@ defmodule Ttt.PlayTerminal do
 
         true ->
           filled_tile = color_tile(tile)
-
           " #{filled_tile} "
       end
     end)
@@ -101,19 +104,16 @@ defmodule Ttt.PlayTerminal do
   end
 
   defp pick_team(str) do
-    players_team =
+    pick =
       str
       |> capture_input()
       |> String.downcase()
 
-    players_team =
-      if players_team == "x" || players_team == "o" do
-        players_team
-      else
-        pick_team("Please pick either X or O (case insensitive)")
-      end
-
-    String.to_atom(players_team)
+    if pick == "x" || pick == "o" do
+     pick
+    else
+      pick_team("Please pick either X or O (case insensitive)")
+    end
   end
 
   # Need to add logic so human can only pick from avaliable moves
