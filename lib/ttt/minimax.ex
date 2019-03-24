@@ -1,9 +1,6 @@
 defmodule Ttt.Minimax do
   alias Ttt.{Outcome, State}
 
-  # @comp :x
-  # @human :o
-
   def minimax(state) do
     depth = get_depth(state)
     avail_moves = Outcome.get_avail_moves(state)
@@ -54,7 +51,6 @@ defmodule Ttt.Minimax do
     |> Outcome.get_avail_moves()
     |> Enum.map(&State.update_board(state, &1))
     |> Enum.map(fn(updated_state) ->
-
       updated_state
       |> State.update_turn()
       |> ttt(depth)

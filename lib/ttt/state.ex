@@ -3,8 +3,6 @@ defmodule Ttt.State do
   defstruct @enforce_keys
 
   alias Ttt.Outcome
-  @comp :x
-  @human :o
 
   def update_board(state, spot) do
     case state.turn do
@@ -28,10 +26,10 @@ defmodule Ttt.State do
 
   def update_outcome(state) do
     cond do
-      Outcome.win?(state.board, @comp) ->
+      Outcome.win?(state.board, state.comp) ->
         %{state | outcome: :comp_win}
 
-      Outcome.win?(state.board, @human) ->
+      Outcome.win?(state.board, state.player) ->
         %{state | outcome: :human_win}
 
       Outcome.get_avail_moves(state) == [] ->
