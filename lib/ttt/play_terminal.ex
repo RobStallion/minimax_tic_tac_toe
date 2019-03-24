@@ -1,5 +1,5 @@
 defmodule Ttt.PlayTerminal do
-  alias Ttt.{State, Minimax, Outcome}
+  alias Ttt.{State, Minimax}
 
   def start do
     IO.puts("""
@@ -14,20 +14,37 @@ defmodule Ttt.PlayTerminal do
     \nLet's begin
     """)
 
-    state = %State{
+    players_team = pick_team("Start by picking your team. X or O")
+
+    init = %State{
       board: Enum.to_list(0..8),
       outcome: :ongoing,
-      turn: :human
+      turn: :human,
+      player: players_team,
+      comp: get_comp(players_team)
     }
 
-    play(state)
+    play(init)
   end
 
-  def play(state) do
-    format_board(state) <> "\n"
-    |> IO.puts()
+  defp pick_team(str) do
+    players_team =
+      str
+      |> capture_input()
+      |> String.downcase()
 
-    case Outcome.update_game_outcome(state) do
+    if players_team == "x" || players_team == "o" do
+      players_team
+    else
+      pick_team("Please pick either X or O (case insensitive)")
+    end
+    |> String.to_atom()
+  end
+
+  defp play(state) do
+    IO.puts("\n" <> format_board(state) <> "\n")
+
+    case State.update_outcome(state) do
       %State{outcome: :comp_win} ->
         "Computer wins. AGAIN!!!!"
 
@@ -41,13 +58,13 @@ defmodule Ttt.PlayTerminal do
         get_human_move(state) |> play
 
       %State{outcome: :ongoing, turn: :comp} ->
-        comp_spot = Minimax.minimax(state, "x")
+        comp_spot = Minimax.minimax(state)
         IO.puts("Computer plays spot #{comp_spot} \n")
 
         updated_state =
           state
-          |> State.update_board(comp_spot, "x")
-          |> State.update_turn(:human)
+          |> State.update_board(comp_spot)
+          |> State.update_turn()
 
         play(updated_state)
     end
@@ -55,14 +72,12 @@ defmodule Ttt.PlayTerminal do
 
   defp get_human_move(state) do
     human_spot =
-      IO.gets("Pick your spot. \n> ")
-      |> String.split()
-      |> hd()
+      capture_input("Pick your spot.")
       |> String.to_integer()
 
     state
-      |> State.update_board(human_spot, "o")
-      |> State.update_turn(:comp)
+      |> State.update_board(human_spot)
+      |> State.update_turn()
   end
 
   # ---- RENDER BOARD HELPERS -----
@@ -87,5 +102,18 @@ defmodule Ttt.PlayTerminal do
       end
     end)
     |> Enum.join("|")
+  end
+
+  defp capture_input(str) do
+    IO.gets(str <> " \n> ")
+    |> String.split()
+    |> hd()
+  end
+
+  def get_comp(player) do
+    case player do
+      :x -> :o
+      :o -> :x
+    end
   end
 end
