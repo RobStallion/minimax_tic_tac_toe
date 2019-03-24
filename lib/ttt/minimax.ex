@@ -1,85 +1,67 @@
 defmodule Ttt.Minimax do
-  alias Ttt.Outcome
+  alias Ttt.State
 
-  @comp "x"
-  @human "o"
-
-  @moduledoc """
-  Minimax algorithm build with elixir to solve tic-tac-toe
-  """
-
-  @doc """
-  func name
-  ## Examples
-
-      iex> Ttt.func_name
-      :answer
-
-  """
-
-  def opposing(player, v1, v2), do: if player == @human, do: v1, else: v2
-  def opposition(player), do: opposing(player, @comp, @human)
-
-  defp pick_for_comp_or_human(player, max_func, min_func) do
-    case player do
-      @comp ->
-        max_func
-      @human ->
-        min_func
-    end
-  end
-
-  def get_depth(board) do
-    board
-    |> Outcome.get_avail_moves()
-    |> length()
-  end
-
-  def update_board(board, spot, player) do
-    List.update_at(board, spot, fn(_) -> player end)
-  end
-
-  def min_max_move_picker(list, player) do
-    pick_for_comp_or_human(player, Enum.max(list), Enum.min(list))
-  end
-
-  def minimax(board, player) do
-    depth = get_depth(board)
-    avail_moves = Outcome.get_avail_moves(board)
+  def get_comp_move(state) do
+    depth = get_depth(state)
 
     moves_with_index =
-      board
-      |> ttt(player, depth)
-      |> Enum.zip(avail_moves)
+      state
+      |> minimax(depth, [])
+      |> Enum.zip(state.available_moves)
 
     {_score, index} =
       pick_for_comp_or_human(
-        player,
+        state,
         Enum.max_by(moves_with_index, fn({s, _i}) -> s end),
         Enum.min_by(moves_with_index, fn({s, _i}) -> s end)
       )
+
     index
   end
 
-  def ttt(board, player, depth) do
-    case Outcome.get_end_state(board) do
-      :comp_win -> [depth]
-      :human_win -> [-depth]
-      :draw -> [0]
-      :ongoing -> play_move(board, player)
+  defp minimax(state, depth, acc) do
+    case state do
+      %State{outcome: :comp_win} ->
+        [depth | acc]
+
+      %State{outcome: :player_win} ->
+        [-depth | acc]
+
+      %State{outcome: :draw} ->
+        [0 | acc]
+
+      %State{outcome: :ongoing} ->
+        play_move(state, acc)
     end
   end
 
-  def play_move(board, player) do
-    opponent = opposition(player)
-    depth = get_depth(board)
+  defp pick_for_comp_or_human(state, max_func, min_func) do
+    case state.turn do
+      :player ->
+        min_func
 
-    board
-    |> Outcome.get_avail_moves()
-    |> Enum.map(&update_board(board, &1, player))
-    |> Enum.map(
-      &ttt(&1, opponent, depth)
-      |> min_max_move_picker(opponent)
-    )
+      :comp ->
+        max_func
+    end
+  end
+
+  defp play_move(state, acc) do
+    depth = get_depth(state)
+
+    state.available_moves
+    |> Enum.map(&State.update_state(state, &1))
+    |> Enum.map(fn(updated_state) ->
+      updated_state
+      |> minimax(depth, acc)
+      |> min_max_move_picker(updated_state)
+    end)
+  end
+
+  defp min_max_move_picker(list, state) do
+    pick_for_comp_or_human(state, Enum.max(list), Enum.min(list))
+  end
+
+  defp get_depth(state) do
+    length(state.available_moves)
   end
 end
