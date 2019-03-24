@@ -15,30 +15,17 @@ defmodule Ttt.PlayTerminal do
     """)
 
     players_team = pick_team("Start by picking your team. X or O")
+    comp_team = if players_team == :x, do: :o, else: :x
 
     init = %State{
       board: Enum.to_list(0..8),
       outcome: :ongoing,
-      turn: :human,
+      turn: :player,
       player: players_team,
-      comp: get_comp(players_team)
+      comp: comp_team
     }
 
     play(init)
-  end
-
-  defp pick_team(str) do
-    players_team =
-      str
-      |> capture_input()
-      |> String.downcase()
-
-    if players_team == "x" || players_team == "o" do
-      players_team
-    else
-      pick_team("Please pick either X or O (case insensitive)")
-    end
-    |> String.to_atom()
   end
 
   defp play(state) do
@@ -48,13 +35,13 @@ defmodule Ttt.PlayTerminal do
       %State{outcome: :comp_win} ->
         "Computer wins. AGAIN!!!!"
 
-      %State{outcome: :human_win} ->
+      %State{outcome: :player_win} ->
         "Player wins. THAT'S IMPOSSIBLE. Really, this can never happen"
 
       %State{outcome: :draw} ->
         "You managed to get a draw. Well played"
 
-      %State{outcome: :ongoing, turn: :human} ->
+      %State{outcome: :ongoing, turn: :player} ->
         get_human_move(state) |> play
 
       %State{outcome: :ongoing, turn: :comp} ->
@@ -70,18 +57,9 @@ defmodule Ttt.PlayTerminal do
     end
   end
 
-  defp get_human_move(state) do
-    human_spot =
-      capture_input("Pick your spot.")
-      |> String.to_integer()
-
-    state
-      |> State.update_board(human_spot)
-      |> State.update_turn()
-  end
-
   # ---- RENDER BOARD HELPERS -----
 
+  # colour in the x and o. Look at andrews one
   defp format_board(state) do
     state.board
     |> Enum.chunk_every(3)
@@ -104,16 +82,36 @@ defmodule Ttt.PlayTerminal do
     |> Enum.join("|")
   end
 
+  # ----- CAPTURE PLAYERS INPUTS -----
+
   defp capture_input(str) do
     IO.gets(str <> " \n> ")
     |> String.split()
     |> hd()
   end
 
-  def get_comp(player) do
-    case player do
-      :x -> :o
-      :o -> :x
+  defp pick_team(str) do
+    players_team =
+      str
+      |> capture_input()
+      |> String.downcase()
+
+    if players_team == "x" || players_team == "o" do
+      players_team
+    else
+      pick_team("Please pick either X or O (case insensitive)")
     end
+    |> String.to_atom()
+  end
+
+  # Need to add logic so human can only pick from avaliable moves
+  defp get_human_move(state) do
+    human_spot =
+      capture_input("Pick your spot.")
+      |> String.to_integer()
+
+    state
+      |> State.update_board(human_spot)
+      |> State.update_turn()
   end
 end

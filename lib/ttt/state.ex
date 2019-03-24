@@ -5,22 +5,16 @@ defmodule Ttt.State do
   alias Ttt.Outcome
 
   def update_board(state, spot) do
-    case state.turn do
-      :human ->
-        %{state | board: List.update_at(state.board, spot, fn(_) -> state.player end)}
-
-      :comp ->
-        %{state | board: List.update_at(state.board, spot, fn(_) -> state.comp end)}
-    end
+    %{state | board: List.update_at(state.board, spot, fn(_) -> Map.get(state, state.turn) end)}
   end
 
   def update_turn(state) do
     case state.turn do
-      :human ->
+      :player ->
         %{state | turn: :comp}
 
       :comp ->
-        %{state | turn: :human}
+        %{state | turn: :player}
     end
   end
 
@@ -30,13 +24,13 @@ defmodule Ttt.State do
         %{state | outcome: :comp_win}
 
       Outcome.win?(state.board, state.player) ->
-        %{state | outcome: :human_win}
+        %{state | outcome: :player_win}
 
       Outcome.get_avail_moves(state) == [] ->
         %{state | outcome: :draw}
 
       true ->
-        Map.put(state, :outcome, :ongoing)
+        %{state | outcome: :ongoing}
     end
   end
 end

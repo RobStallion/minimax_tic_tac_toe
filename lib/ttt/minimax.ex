@@ -24,7 +24,7 @@ defmodule Ttt.Minimax do
       %State{outcome: :comp_win} ->
         [depth]
 
-      %State{outcome: :human_win} ->
+      %State{outcome: :player_win} ->
         [-depth]
 
       %State{outcome: :draw} ->
@@ -39,7 +39,7 @@ defmodule Ttt.Minimax do
     case state.turn do
       :comp ->
         max_func
-      :human ->
+      :player ->
         min_func
     end
   end
