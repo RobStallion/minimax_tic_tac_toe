@@ -38,20 +38,17 @@ defmodule Ttt.PlayTerminal do
         "You managed to get a draw. Well played"
 
       %State{outcome: :ongoing, turn: :human} ->
-        get_human_move(state)
-        |> play
+        get_human_move(state) |> play
 
       %State{outcome: :ongoing, turn: :comp} ->
         comp_spot = Minimax.minimax(state, "x")
-
-        updated_board = Minimax.update_board(state, comp_spot, "x")
-        updated_state =
-          %{state |
-            board: updated_board,
-            turn: :human
-          }
-
         IO.puts("Computer plays spot #{comp_spot} \n")
+
+        updated_state =
+          state
+          |> State.update_board(comp_spot, "x")
+          |> State.update_turn(:human)
+
         play(updated_state)
     end
   end
@@ -63,12 +60,12 @@ defmodule Ttt.PlayTerminal do
       |> hd()
       |> String.to_integer()
 
-    %{
-      state |
-        board: Minimax.update_board(state, human_spot, "o"),
-        turn: :comp
-    }
+    state
+      |> State.update_board(human_spot, "o")
+      |> State.update_turn(:comp)
   end
+
+  # ---- RENDER BOARD HELPERS -----
 
   defp format_board(state) do
     state.board

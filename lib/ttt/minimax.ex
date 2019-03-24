@@ -4,15 +4,6 @@ defmodule Ttt.Minimax do
   @comp "x"
   @human "o"
 
-  defp pick_for_comp_or_human(player, max_func, min_func) do
-    case player do
-      @comp ->
-        max_func
-      @human ->
-        min_func
-    end
-  end
-
   def minimax(state, player) do
     depth = get_depth(state)
     avail_moves = Outcome.get_avail_moves(state)
@@ -47,16 +38,23 @@ defmodule Ttt.Minimax do
     end
   end
 
-  def play_move(state, player) do
+  defp pick_for_comp_or_human(player, max_func, min_func) do
+    case player do
+      @comp ->
+        max_func
+      @human ->
+        min_func
+    end
+  end
+
+  defp play_move(state, player) do
     opponent = opposition(player)
     depth = get_depth(state)
 
     state
     |> Outcome.get_avail_moves()
-    |> Enum.map(&update_board(state, &1, player))
-    |> Enum.map(fn(board) ->
-      updated_state = %{state | board: board}
-
+    |> Enum.map(&State.update_board(state, &1, player))
+    |> Enum.map(fn(updated_state) ->
       ttt(updated_state, opponent, depth) |> min_max_move_picker(opponent)
     end)
   end
@@ -65,14 +63,10 @@ defmodule Ttt.Minimax do
     pick_for_comp_or_human(player, Enum.max(list), Enum.min(list))
   end
 
-  def update_board(state, spot, player) do
-    List.update_at(state.board, spot, fn(_) -> player end)
-  end
-
   defp get_depth(state) do
     state |> Outcome.get_avail_moves() |> length()
   end
 
-  def opposing(player, v1, v2), do: if player == @human, do: v1, else: v2
-  def opposition(player), do: opposing(player, @comp, @human)
+  defp opposing(player, v1, v2), do: if player == @human, do: v1, else: v2
+  defp opposition(player), do: opposing(player, @comp, @human)
 end
