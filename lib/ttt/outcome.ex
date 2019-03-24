@@ -2,13 +2,23 @@ defmodule Ttt.Outcome do
   @comp "x"
   @human "o"
 
-  def get_avail_moves(board), do: Enum.filter(board, &is_integer/1)
-  
-  defp all_same?(combo, player) do
-    Enum.all?(combo, &(&1 == player))
+  def update_game_outcome(state) do
+    cond do
+      win?(state.board, @comp) ->
+        Map.put(state, :outcome, :comp_win)
+
+      win?(state.board, @human) ->
+        Map.put(state, :outcome, :human_win)
+
+      get_avail_moves(state) == [] ->
+        Map.put(state, :outcome, :draw)
+
+      true ->
+        Map.put(state, :outcome, :ongoing)
+    end
   end
 
-  def win?([i0, i1, i2, i3, i4, i5, i6, i7, i8], player) do
+  defp win?([i0, i1, i2, i3, i4, i5, i6, i7, i8], player) do
     [
       [i0, i1, i2],
       [i3, i4, i5],
@@ -23,12 +33,9 @@ defmodule Ttt.Outcome do
     |> Enum.any?(&(&1 == true))
   end
 
-  def get_end_state(board) do
-    cond do
-      win?(board, @comp) -> :comp_win
-      win?(board, @human) -> :human_win
-      get_avail_moves(board) == [] -> :draw
-      true -> :ongoing
-    end
+  defp all_same?(combo, player) do
+    Enum.all?(combo, &(&1 == player))
   end
+
+  def get_avail_moves(state), do: Enum.filter(state.board, &is_integer/1)
 end

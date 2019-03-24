@@ -1,5 +1,5 @@
 defmodule Ttt.PlayTerminal do
-  alias Ttt.{Minimax, Outcome}
+  alias Ttt.{State, Minimax, Outcome}
 
   def start do
     IO.puts("""
@@ -14,61 +14,71 @@ defmodule Ttt.PlayTerminal do
     \nLet's begin
     """)
 
-    play([0,1,2,3,4,5,6,7,8])
+    state = %State{
+      board: Enum.to_list(0..8),
+      outcome: :ongoing,
+      turn: :human
+    }
+
+    play(state)
   end
 
-  def play(board) do
-    format_board(board) <> "\n"
+  def play(state) do
+    format_board(state) <> "\n"
     |> IO.puts()
 
-    case Outcome.get_end_state(board) do
-      :comp_win -> "Computer wins. AGAIN!!!!"
-      :human_win -> "Player wins"
-      :draw -> "This match is a draw."
-      :ongoing ->
-        case check_whos_go(board) do
-          :comp_go ->
-            comp_spot = Minimax.minimax(board, "x")
-            updated_board = Minimax.update_board(board, comp_spot, "x")
+    case Outcome.update_game_outcome(state) do
+      %State{outcome: :comp_win} ->
+        "Computer wins. AGAIN!!!!"
 
-            IO.puts("Computer plays spot #{comp_spot} \n")
-            play(updated_board)
-          :human_go ->
-            get_human_move(board)
-        end
+      %State{outcome: :human_win} ->
+        "Player wins. THAT'S IMPOSSIBLE. Really, this can never happen"
+
+      %State{outcome: :draw} ->
+        "You managed to get a draw. Well played"
+
+      %State{outcome: :ongoing, turn: :human} ->
+        get_human_move(state)
+        |> play
+
+      %State{outcome: :ongoing, turn: :comp} ->
+        comp_spot = Minimax.minimax(state, "x")
+
+        updated_board = Minimax.update_board(state, comp_spot, "x")
+        updated_state =
+          %{state |
+            board: updated_board,
+            turn: :human
+          }
+
+        IO.puts("Computer plays spot #{comp_spot} \n")
+        play(updated_state)
     end
   end
 
-  def check_whos_go(board) do
-    computer_turns = Enum.count(board, &(&1 == "x"))
-    human_turns = Enum.count(board, &(&1 == "o"))
-
-    case computer_turns < human_turns do
-      true -> :comp_go
-      _    -> :human_go
-    end
-  end
-
-  def get_human_move(board) do
+  defp get_human_move(state) do
     human_spot =
       IO.gets("Pick your spot. \n> ")
       |> String.split()
       |> hd()
       |> String.to_integer()
 
-    Minimax.update_board(board, human_spot, "o")
-    |> play()
+    %{
+      state |
+        board: Minimax.update_board(state, human_spot, "o"),
+        turn: :comp
+    }
   end
 
-  def format_board(board) do
-    board
+  defp format_board(state) do
+    state.board
     |> Enum.chunk_every(3)
     |> Enum.map(&format_row/1)
     |> Enum.intersperse("--- --- ---")
     |> Enum.join("\n")
   end
 
-  def format_row(row) do
+  defp format_row(row) do
     row
     |> Enum.map(fn(tile) ->
       case is_bitstring(tile) do
