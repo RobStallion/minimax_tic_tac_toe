@@ -4,6 +4,13 @@ defmodule Ttt.State do
 
   alias Ttt.Outcome
 
+  def update_state(state, spot) do
+    state
+    |> update_board(spot)
+    |> update_turn()
+    |> update_outcome()
+  end
+
   def update_board(state, spot) do
     %{state | board: List.update_at(state.board, spot, fn(_) -> Map.get(state, state.turn) end)}
   end

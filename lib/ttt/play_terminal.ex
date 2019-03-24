@@ -36,7 +36,7 @@ defmodule Ttt.PlayTerminal do
   defp play(state) do
     IO.puts("\n" <> format_board(state) <> "\n")
 
-    case State.update_outcome(state) do
+    case state do
       %State{outcome: :comp_win} ->
         "Computer wins. AGAIN!!!!"
 
@@ -47,18 +47,15 @@ defmodule Ttt.PlayTerminal do
         "You managed to get a draw. Well played"
 
       %State{outcome: :ongoing, turn: :player} ->
-        get_human_move(state) |> play
+        player_spot = get_player_move("Pick your spot.")
+        
+        state |> State.update_state(player_spot) |> play()
 
       %State{outcome: :ongoing, turn: :comp} ->
-        comp_spot = Minimax.minimax(state)
+        comp_spot = Minimax.get_comp_move(state)
         IO.puts("Computer plays spot #{comp_spot} \n")
 
-        updated_state =
-          state
-          |> State.update_board(comp_spot)
-          |> State.update_turn()
-
-        play(updated_state)
+        state |> State.update_state(comp_spot) |> play()
     end
   end
 
@@ -117,13 +114,9 @@ defmodule Ttt.PlayTerminal do
   end
 
   # Need to add logic so human can only pick from avaliable moves
-  defp get_human_move(state) do
-    human_spot =
-      capture_input("Pick your spot.")
-      |> String.to_integer()
-
-    state
-      |> State.update_board(human_spot)
-      |> State.update_turn()
+  defp get_player_move(str) do
+    str
+    |> capture_input()
+    |> String.to_integer()
   end
 end
