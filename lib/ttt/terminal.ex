@@ -1,20 +1,8 @@
-defmodule Ttt.PlayTerminal do
+defmodule Ttt.Terminal do
   alias Ttt.{State, Minimax}
   alias IO.ANSI
 
-  def start do
-    IO.puts("""
-    You have signed up to play
-    The Reigning
-    Defending
-    Undisputed
-    Tic Tac Toe champion of this computer.
-    COMPUTER!!!!!!!!!!!!!!!!!!!
-    💪💻🤳
-
-    \nLet's begin
-    """)
-
+  def pick_team do
     players_team =
       "Start by picking your team. X or O"
       |> pick_team()
@@ -115,7 +103,7 @@ defmodule Ttt.PlayTerminal do
   end
 
   defp get_player_move(state, str) do
-    move_no = 
+    move_no =
       str
       |> capture_input()
       |> String.to_integer()
