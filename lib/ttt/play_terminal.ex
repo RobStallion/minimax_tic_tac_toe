@@ -48,7 +48,7 @@ defmodule Ttt.PlayTerminal do
         "You managed to get a draw. Well played"
 
       %State{outcome: :ongoing, turn: :player} ->
-        player_spot = get_player_move("Pick your spot.")
+        player_spot = get_player_move(state, "Pick your spot.")
 
         state |> State.update_state(player_spot) |> play()
 
@@ -114,10 +114,16 @@ defmodule Ttt.PlayTerminal do
     end
   end
 
-  # Need to add logic so human can only pick from avaliable moves
-  defp get_player_move(str) do
-    str
-    |> capture_input()
-    |> String.to_integer()
+  defp get_player_move(state, str) do
+    move_no = 
+      str
+      |> capture_input()
+      |> String.to_integer()
+
+    if Enum.any?(state.available_moves, &(&1 == move_no)) do
+      move_no
+    else
+      get_player_move(state, "Please pick a number from the available positions left to play")
+    end
   end
 end
