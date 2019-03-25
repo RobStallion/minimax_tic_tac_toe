@@ -42,7 +42,7 @@ defmodule Ttt.Terminal do
 
       %State{outcome: :ongoing, turn: :comp} ->
         comp_spot = Minimax.get_comp_move(state)
-        IO.puts("Computer plays spot #{comp_spot} \n")
+        IO.puts("Computer plays spot #{comp_spot}")
 
         state |> State.update_state(comp_spot) |> play()
     end
